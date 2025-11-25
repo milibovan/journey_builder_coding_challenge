@@ -4,10 +4,12 @@ import {useEffect, useState} from "react";
 import type {BlueprintResponse} from "./core/types.ts";
 import {fetchBlueprints} from "./api/mockData.ts";
 import type {Node, Edge} from "@xyflow/react";
+import PrefillPanel from "./components/panels/PrefillPanel.tsx";
 
 function App() {
     const [blueprints, setBlueprints] = useState<BlueprintResponse>();
     const [loading, setLoading] = useState<boolean>(false);
+    const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
     useEffect(() => {
         fetchBlueprints().then((response) => {
@@ -20,18 +22,21 @@ function App() {
         id: node.id,
         data: {label: node.data.name},
         position: node.position
-    }))  ?? []
+    })) ?? []
 
     const edges: Edge[] = blueprints?.edges.map((edge) => ({
         id: Math.random().toString(),
         source: edge.source,
         target: edge.target,
-    }))  ?? []
+    })) ?? []
 
     return (
         <>
             {loading && <div><p className="center text-emerald-800">Loading...</p></div>}
-            {blueprints && <CustomFlow id={blueprints.id} initialNodes={nodes} initialEdges={edges}/>}
+            {blueprints && <CustomFlow id={blueprints.id} initialNodes={nodes} initialEdges={edges}
+                                       onNodeClick={setSelectedNode}/>}
+
+            {blueprints && selectedNode && <PrefillPanel id={selectedNode.id}/>}
         </>
     )
 }
