@@ -1,7 +1,4 @@
-interface Position {
-    x: number;
-    y: number;
-}
+import type { XYPosition } from "@xyflow/react";
 
 interface SlaDuration {
     number: number;
@@ -66,7 +63,7 @@ interface DynamicFieldProperties {
 export interface GraphNode {
     id: string;
     type: string;
-    position: Position;
+    position: XYPosition;
     data: NodeData;
 }
 

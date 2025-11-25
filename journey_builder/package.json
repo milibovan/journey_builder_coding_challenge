@@ -12,8 +12,10 @@
   "dependencies": {
     "@react-buddy/ide-toolbox": "^2.4.0",
     "@tailwindcss/vite": "^4.1.17",
+    "@xyflow/react": "^12.9.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-sketch-canvas": "^6.2.0",
     "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
