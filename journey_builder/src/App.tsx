@@ -1,10 +1,10 @@
 import './App.css'
 import CustomFlow from "./components/CustomFlow.tsx";
 import {useEffect, useState} from "react";
-import type {BlueprintResponse} from "./core/types.ts";
+import type {BlueprintResponse, FormDefinition} from "./core/types.ts";
 import {fetchBlueprints} from "./api/mockData.ts";
 import type {Node, Edge} from "@xyflow/react";
-import PrefillPanel from "./components/panels/PrefillPanel.tsx";
+import PrefillModal from "./components/modals/PrefillModal.tsx";
 
 function App() {
     const [blueprints, setBlueprints] = useState<BlueprintResponse>();
@@ -30,13 +30,21 @@ function App() {
         target: edge.target,
     })) ?? []
 
+    let form: FormDefinition | undefined;
+
+    if (selectedNode && blueprints) {
+        const formId = blueprints.nodes.find((node) => node.id === selectedNode.id)?.data.component_id;
+        form = blueprints.forms.find((f) => f.id === formId);
+    }
+
     return (
         <>
             {loading && <div><p className="center text-emerald-800">Loading...</p></div>}
             {blueprints && <CustomFlow id={blueprints.id} initialNodes={nodes} initialEdges={edges}
                                        onNodeClick={setSelectedNode}/>}
 
-            {blueprints && selectedNode && <PrefillPanel id={selectedNode.id}/>}
+            {blueprints && selectedNode && form &&
+                <PrefillModal id={selectedNode.id} nodes={blueprints.nodes} form={form}/>}
         </>
     )
 }
