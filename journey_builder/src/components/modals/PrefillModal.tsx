@@ -1,5 +1,5 @@
-import type {FormDefinition, GraphNode} from "../../core/types.ts";
-import {Database} from "lucide-react";
+import type { FormDefinition, GraphNode } from "../../core/types.ts";
+import { Database } from "lucide-react";
 
 interface PrefillModalProps {
     id: string;
@@ -8,8 +8,8 @@ interface PrefillModalProps {
     onClose: () => void;
 }
 
-function PrefillModal({form, onClose}: PrefillModalProps) {
-    const fields = Object.keys(form.field_schema.properties);
+function PrefillModal({ form, onClose }: PrefillModalProps) {
+    const formFields = Object.keys(form.field_schema.properties);
 
     return (
         <>
@@ -36,7 +36,7 @@ function PrefillModal({form, onClose}: PrefillModalProps) {
 
                     <div className="p-4 overflow-y-auto max-h-[60vh]">
                         <ul className="space-y-2">
-                            {fields.map((field) => (
+                            {formFields.map((field) => (
                                 <li
                                     key={field}
                                     className="p-3 border border-gray-200 rounded hover:border-blue-400 flex items-center gap-3"

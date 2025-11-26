@@ -1,9 +1,9 @@
 import './App.css'
 import CustomFlow from "./components/CustomFlow.tsx";
-import {useEffect, useState} from "react";
-import type {BlueprintResponse, FormDefinition} from "./core/types.ts";
-import {fetchBlueprints} from "./api/mockData.ts";
-import type {Node, Edge} from "@xyflow/react";
+import { useEffect, useState } from "react";
+import type { BlueprintResponse, FormDefinition } from "./core/types.ts";
+import { fetchBlueprints } from "./api/mockData.ts";
+import type { Node, Edge } from "@xyflow/react";
 import PrefillModal from "./components/modals/PrefillModal.tsx";
 
 function App() {
@@ -20,7 +20,7 @@ function App() {
 
     const nodes: Node[] = blueprints?.nodes.map((node) => ({
         id: node.id,
-        data: {label: node.data.name},
+        data: { label: node.data.name },
         position: node.position
     })) ?? []
 
@@ -41,11 +41,11 @@ function App() {
         <>
             {loading && <div><p className="center text-emerald-800">Loading...</p></div>}
             {blueprints && <CustomFlow id={blueprints.id} initialNodes={nodes} initialEdges={edges}
-                                       onNodeClick={setSelectedNode}/>}
+                onNodeClick={setSelectedNode} />}
 
             {blueprints && selectedNode && form &&
                 <PrefillModal id={selectedNode.id} nodes={blueprints.nodes} form={form}
-                              onClose={() => setSelectedNode(null)}/>}
+                    onClose={() => setSelectedNode(null)} />}
         </>
     )
 }

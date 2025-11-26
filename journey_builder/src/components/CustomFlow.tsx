@@ -1,4 +1,4 @@
-import React, {useState, useCallback} from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     ReactFlow,
     addEdge,
@@ -24,7 +24,7 @@ interface CustomFlowProps {
     onNodeClick: (node: Node) => void;
 }
 
-function CustomFlow({id, initialNodes, initialEdges, onNodeClick}: CustomFlowProps) {
+function CustomFlow({ id, initialNodes, initialEdges, onNodeClick }: CustomFlowProps) {
     const [nodes, setNodes] = useState<Node[]>(initialNodes);
     const [edges, setEdges] = useState<Edge[]>(initialEdges);
 
@@ -46,7 +46,7 @@ function CustomFlow({id, initialNodes, initialEdges, onNodeClick}: CustomFlowPro
     );
 
     return (
-        <div style={{height: 400, width: 1200, paddingTop: 20}}>
+        <div style={{ height: 400, width: 1200, paddingTop: 20 }}>
             <ReactFlow
                 key={id}
                 nodes={nodes}
