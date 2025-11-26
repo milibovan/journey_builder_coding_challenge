@@ -5,6 +5,12 @@ interface SlaDuration {
     unit: string;
 }
 
+export interface MappedFields {
+    fieldName: string;
+    sourceForm: string;
+    sourceField: string;
+}
+
 interface NodeData {
     id: string;
     component_key: string;
@@ -16,6 +22,9 @@ interface NodeData {
     sla_duration: SlaDuration
     approval_required: boolean;
     approval_roles: Array<string>;
+    input_mapping: {
+        fields: MappedFields[];
+    };
 }
 
 interface FormFieldProperty {

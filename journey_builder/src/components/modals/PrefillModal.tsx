@@ -1,15 +1,38 @@
-import type { FormDefinition, GraphNode } from "../../core/types.ts";
-import { Database } from "lucide-react";
+import type {FormDefinition, GraphNode, MappedFields} from "../../core/types.ts";
+import {Database, XCircle} from "lucide-react";
+import {useState} from "react";
+import DataMappingModal from "./DataMappingModal.tsx";
 
 interface PrefillModalProps {
     id: string;
     nodes: GraphNode[];
+    forms: FormDefinition[];
     form: FormDefinition;
     onClose: () => void;
+    onSave: (prefilledFields: MappedFields[]) => void; // ✅ Fixed type
 }
 
-function PrefillModal({ form, onClose }: PrefillModalProps) {
+function PrefillModal({id, nodes, forms, form, onClose, onSave}: PrefillModalProps) {
     const formFields = Object.keys(form.field_schema.properties);
+    const [prefilledFields, setPrefilledFields] = useState<MappedFields[]>([]);
+    const [selectedFieldForMapping, setSelectedFieldForMapping] = useState<string | null>(null);
+
+    const handleSelectMapping = (fieldName: string, sourceForm: string, sourceField: string) => {
+        setPrefilledFields(prev => [
+            ...prev.filter(f => f.fieldName !== fieldName),
+            {fieldName, sourceForm, sourceField}
+        ]);
+        setSelectedFieldForMapping(null);
+    };
+
+    const handleRemoveMapping = (fieldName: string) => {
+        setPrefilledFields(prev => prev.filter(f => f.fieldName !== fieldName));
+    };
+
+    const handleSave = () => {
+        onSave(prefilledFields);
+        onClose(); // ✅ Close modal after save
+    };
 
     return (
         <>
@@ -19,16 +42,19 @@ function PrefillModal({ form, onClose }: PrefillModalProps) {
             />
 
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+                <div
+                    className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
+                    onClick={(e) => e.stopPropagation()} // ✅ Prevent closing when clicking inside modal
+                >
 
                     <div className="flex items-center justify-between p-4 border-b border-gray-200">
                         <div className="text-left">
-                            <h2 className="text-lg font-semibold">Prefill Configuration</h2>
+                            <h2 className="text-lg font-semibold">Prefill</h2>
                             <p className="text-sm text-gray-500">Prefill fields for this form</p>
                         </div>
                         <button
                             onClick={onClose}
-                            className="text-gray-400 hover:text-gray-600"
+                            className="text-gray-400 hover:text-gray-600 text-xl"
                         >
                             ✕
                         </button>
@@ -36,15 +62,48 @@ function PrefillModal({ form, onClose }: PrefillModalProps) {
 
                     <div className="p-4 overflow-y-auto max-h-[60vh]">
                         <ul className="space-y-2">
-                            {formFields.map((field) => (
-                                <li
-                                    key={field}
-                                    className="p-3 border border-gray-200 rounded hover:border-blue-400 flex items-center gap-3"
-                                >
-                                    <Database size={20} className="text-gray-400" />
-                                    <span className="text-gray-600">{field}</span>
-                                </li>
-                            ))}
+                            {formFields.map((field) => {
+                                const mapping = prefilledFields.find(f => f.fieldName === field);
+                                const isPrefilled = !!mapping;
+
+                                return (
+                                    <li
+                                        key={field}
+                                        className={`
+                                            p-3 border hover:border-blue-400 
+                                            flex items-center gap-3 cursor-pointer
+                                            ${isPrefilled
+                                            ? 'bg-blue-50 border-blue-300 rounded'
+                                            : 'bg-white border-gray-200 rounded'
+                                        }
+                                        `}
+                                        onClick={() => !isPrefilled && setSelectedFieldForMapping(field)}
+                                    >
+                                        <Database size={20} className="text-gray-400"/>
+                                        <div className="flex-1">
+                                            <span
+                                                className={isPrefilled ? "text-gray-900 font-medium" : "text-gray-600"}>
+                                                {field}
+                                            </span>
+                                            {isPrefilled && mapping && (
+                                                <div className="text-xs text-gray-500 mt-1">
+                                                    {mapping.sourceForm}.{mapping.sourceField}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {isPrefilled && (
+                                            <XCircle
+                                                size={20}
+                                                className="text-gray-400 hover:text-red-500"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleRemoveMapping(field);
+                                                }}
+                                            />
+                                        )}
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </div>
 
@@ -55,12 +114,26 @@ function PrefillModal({ form, onClose }: PrefillModalProps) {
                         >
                             Cancel
                         </button>
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        <button
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                            onClick={handleSave}
+                        >
                             Save
                         </button>
                     </div>
                 </div>
             </div>
+
+            {selectedFieldForMapping && (
+                <DataMappingModal
+                    id={id}
+                    nodes={nodes}
+                    forms={forms}
+                    fieldName={selectedFieldForMapping}
+                    onSelect={handleSelectMapping}
+                    onClose={() => setSelectedFieldForMapping(null)}
+                />
+            )}
         </>
     );
 }
