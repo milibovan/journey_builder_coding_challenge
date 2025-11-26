@@ -246,12 +246,6 @@ All data structures defined in `types.ts` ensure compile-time safety
 
 ## 🔮 Future Enhancements
 
-### Planned Refactoring
-- [ ] Split `DataMappingModal.tsx` into:
-    - `FormsDataSelector.tsx` - Handles ancestor form data
-    - `GlobalsDataSelector.tsx` - Handles global properties
-    - Improved maintainability and testability
-
 ### Potential Features
 - [ ] Validation for circular dependencies
 - [ ] Field type compatibility checking
