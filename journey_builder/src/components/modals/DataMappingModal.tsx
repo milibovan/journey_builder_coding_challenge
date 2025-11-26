@@ -1,8 +1,8 @@
-import {globalProperties, actionProperties, clientOrganizationProperties} from "../../utils/utils";
 import type {FormDefinition, GraphNode} from "../../core/types.ts";
 import {getAncestorForms, getAncestorNodes} from "../../core/traversal.ts";
 import {useState} from "react";
-import {ChevronDown, ChevronRight} from "lucide-react";
+import GlobalPropertiesMapping from "./mappings/GlobalPropertiesMapping.tsx";
+import AncestorNodesMapping from "./mappings/AncestorNodesMapping.tsx";
 
 interface DataMappingModalProps {
     id: string;
@@ -63,92 +63,21 @@ function DataMappingModal({id, nodes, forms, fieldName, onSelect, onClose}: Data
                             />
 
                             <div className="space-y-1">
-                                {globalProperties.map((property) => {
-                                    const isExpanded = expandedForms.has(property);
-                                    const fields = property === "Action Properties"
-                                        ? actionProperties
-                                        : clientOrganizationProperties;
+                                <GlobalPropertiesMapping
+                                    expandedForms={expandedForms}
+                                    searchTerm={searchTerm}
+                                    onToggleForm={toggleForm}
+                                    onSelectField={handleSelectField}
+                                />
 
-                                    return (
-                                        <div key={property}>
-                                            <div
-                                                className="px-3 py-2 hover:bg-blue-50 rounded cursor-pointer flex items-center gap-2"
-                                                onClick={() => toggleForm(property)}
-                                            >
-                                                {isExpanded ? (
-                                                    <ChevronDown size={16} />
-                                                ) : (
-                                                    <ChevronRight size={16} />
-                                                )}
-                                                <span className="text-sm font-medium">{property}</span>
-                                            </div>
-
-                                            {isExpanded && (
-                                                <div className="ml-6 space-y-1">
-                                                    {fields
-                                                        .filter(field =>
-                                                            !searchTerm ||
-                                                            field.toLowerCase().includes(searchTerm.toLowerCase())
-                                                        )
-                                                        .map((field) => (
-                                                            <div
-                                                                key={field}
-                                                                className="px-3 py-2 hover:bg-blue-50 rounded cursor-pointer text-sm text-gray-700"
-                                                                onClick={() => handleSelectField(property, field)}
-                                                            >
-                                                                {field}
-                                                            </div>
-                                                        ))
-                                                    }
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-
-                                {ancestorNodes.map((node) => {
-                                    const form = ancestorForms.find(f => f.id === node.data.component_id);
-                                    if (!form) return null;
-
-                                    const isExpanded = expandedForms.has(node.id);
-                                    const formFields = Object.keys(form.field_schema.properties);
-
-                                    return (
-                                        <div key={node.id}>
-                                            <div
-                                                className="px-3 py-2 hover:bg-blue-50 rounded cursor-pointer flex items-center gap-2"
-                                                onClick={() => toggleForm(node.id)}
-                                            >
-                                                {isExpanded ? (
-                                                    <ChevronDown size={16} />
-                                                ) : (
-                                                    <ChevronRight size={16} />
-                                                )}
-                                                <span className="text-sm font-medium">{node.data.name}</span>
-                                            </div>
-
-                                            {isExpanded && (
-                                                <div className="ml-6 space-y-1">
-                                                    {formFields
-                                                        .filter(field =>
-                                                            !searchTerm ||
-                                                            field.toLowerCase().includes(searchTerm.toLowerCase())
-                                                        )
-                                                        .map((field) => (
-                                                            <div
-                                                                key={field}
-                                                                className="px-3 py-2 hover:bg-blue-50 rounded cursor-pointer text-sm text-gray-700"
-                                                                onClick={() => handleSelectField(node.data.name, field)}
-                                                            >
-                                                                {field}
-                                                            </div>
-                                                        ))
-                                                    }
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                < AncestorNodesMapping
+                                    ancestorNodes={ancestorNodes}
+                                    ancestorForms={ancestorForms}
+                                    expandedForms={expandedForms}
+                                    searchTerm={searchTerm}
+                                    onToggleForm={toggleForm}
+                                    onSelectField={handleSelectField}
+                                />
                             </div>
                         </div>
                     </div>

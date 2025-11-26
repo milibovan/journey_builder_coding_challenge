@@ -29,8 +29,12 @@ journey_builder_coding_challenge/
 │       ├── components/
 │       │   ├── CustomFlow.tsx     # ReactFlow wrapper
 │       │   └── modals/
-│       │       ├── PrefillModal.tsx        # Main prefill UI
-│       │       └── DataMappingModal.tsx    # Data source selector
+│       │       ├── PrefillModal.tsx           # Main prefill UI
+│       │       ├── DataMappingModal.tsx       # Data source selector
+│       │       └── mappings/
+│       │           ├── AncestorNodesMapping.tsx     # Ancestor node properties
+│       │           ├── GlobalPropertiesMapping.tsx  # Global properties
+│       │           └── MappingItem.tsx              # Reusable mapping template
 │       ├── core/
 │       │   ├── types.ts           # TypeScript definitions
 │       │   └── traversal.ts       # DAG traversal logic
@@ -54,14 +58,15 @@ journey_builder_coding_challenge/
 - Allows removal of existing mappings
 - Triggers DataMappingModal for new mappings
 
-#### 3. **DataMappingModal** (`components/modals/DataMappingModal.tsx`)
+#### 3. DataMappingModal (components/modals/DataMappingModal.tsx)
+
 - Hierarchical data source selector
-- Three categories of data sources:
-    - **Global Properties**: Action Properties, Client Organization Properties
-    - **Direct Ancestors**: Forms directly connected upstream
-    - **Transitive Ancestors**: Forms connected through multiple hops
-- Expandable/collapsible tree structure with search functionality
-- *Note: Will be refactored into separate components (FormsData, GlobalsData) for better separation of concerns*
+- Orchestrates mapping components for different data sources
+- Search functionality across all data sources
+- Delegates rendering to specialized mapping components:
+  - GlobalPropertiesMapping: Handles Action Properties and Client Organization Properties
+  - AncestorNodesMapping: Handles direct and transitive ancestor forms
+  - MappingItem: Reusable component template for consistent rendering
 
 ### Data Flow
 
