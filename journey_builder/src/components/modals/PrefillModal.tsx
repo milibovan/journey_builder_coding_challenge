@@ -1,6 +1,6 @@
-import type {FormDefinition, GraphNode, MappedFields} from "../../core/types.ts";
-import {Database, XCircle} from "lucide-react";
-import {useState} from "react";
+import type { FormDefinition, GraphNode, MappedFields } from "../../core/types.ts";
+import { Database, XCircle } from "lucide-react";
+import { useState } from "react";
 import DataMappingModal from "./DataMappingModal.tsx";
 
 interface PrefillModalProps {
@@ -9,18 +9,20 @@ interface PrefillModalProps {
     forms: FormDefinition[];
     form: FormDefinition;
     onClose: () => void;
-    onSave: (prefilledFields: MappedFields[]) => void; // ✅ Fixed type
+    onSave: (prefilledFields: MappedFields[]) => void;
 }
 
-function PrefillModal({id, nodes, forms, form, onClose, onSave}: PrefillModalProps) {
+function PrefillModal({ id, nodes, forms, form, onClose, onSave }: PrefillModalProps) {
     const formFields = Object.keys(form.field_schema.properties);
-    const [prefilledFields, setPrefilledFields] = useState<MappedFields[]>([]);
+    const node = nodes.find((node) => node.id === id);
+    const initialPrefilledFields: MappedFields[] = node?.data.input_mapping?.fields || [];
+    const [prefilledFields, setPrefilledFields] = useState<MappedFields[]>(initialPrefilledFields);
     const [selectedFieldForMapping, setSelectedFieldForMapping] = useState<string | null>(null);
 
     const handleSelectMapping = (fieldName: string, sourceForm: string, sourceField: string) => {
         setPrefilledFields(prev => [
             ...prev.filter(f => f.fieldName !== fieldName),
-            {fieldName, sourceForm, sourceField}
+            { fieldName, sourceForm, sourceField }
         ]);
         setSelectedFieldForMapping(null);
     };
@@ -31,7 +33,7 @@ function PrefillModal({id, nodes, forms, form, onClose, onSave}: PrefillModalPro
 
     const handleSave = () => {
         onSave(prefilledFields);
-        onClose(); // ✅ Close modal after save
+        onClose();
     };
 
     return (
@@ -73,13 +75,13 @@ function PrefillModal({id, nodes, forms, form, onClose, onSave}: PrefillModalPro
                                             p-3 border hover:border-blue-400 
                                             flex items-center gap-3 cursor-pointer
                                             ${isPrefilled
-                                            ? 'bg-blue-50 border-blue-300 rounded'
-                                            : 'bg-white border-gray-200 rounded'
-                                        }
+                                                ? 'bg-blue-50 border-blue-300 rounded'
+                                                : 'bg-white border-gray-200 rounded'
+                                            }
                                         `}
                                         onClick={() => !isPrefilled && setSelectedFieldForMapping(field)}
                                     >
-                                        <Database size={20} className="text-gray-400"/>
+                                        <Database size={20} className="text-gray-400" />
                                         <div className="flex-1">
                                             <span
                                                 className={isPrefilled ? "text-gray-900 font-medium" : "text-gray-600"}>

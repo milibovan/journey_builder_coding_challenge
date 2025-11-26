@@ -50,7 +50,6 @@ function DataMappingModal({id, nodes, forms, fieldName, onSelect, onClose}: Data
                         <h2 className="text-lg font-semibold">Select data element to map</h2>
                     </div>
 
-                    {/* Full width content */}
                     <div className="flex-1 overflow-y-auto">
                         <div className="p-4">
                             <h3 className="font-semibold mb-3">Available data</h3>
@@ -64,7 +63,6 @@ function DataMappingModal({id, nodes, forms, fieldName, onSelect, onClose}: Data
                             />
 
                             <div className="space-y-1">
-                                {/* Global Properties */}
                                 {globalProperties.map((property) => {
                                     const isExpanded = expandedForms.has(property);
                                     const fields = property === "Action Properties"
@@ -108,7 +106,6 @@ function DataMappingModal({id, nodes, forms, fieldName, onSelect, onClose}: Data
                                     );
                                 })}
 
-                                {/* Ancestor Forms */}
                                 {ancestorNodes.map((node) => {
                                     const form = ancestorForms.find(f => f.id === node.data.component_id);
                                     if (!form) return null;
