@@ -44,7 +44,8 @@ function App() {
                                        onNodeClick={setSelectedNode}/>}
 
             {blueprints && selectedNode && form &&
-                <PrefillModal id={selectedNode.id} nodes={blueprints.nodes} form={form}/>}
+                <PrefillModal id={selectedNode.id} nodes={blueprints.nodes} form={form}
+                              onClose={() => setSelectedNode(null)}/>}
         </>
     )
 }
