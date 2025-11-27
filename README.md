@@ -29,18 +29,26 @@ journey_builder_coding_challenge/
 │       ├── components/
 │       │   ├── CustomFlow.tsx     # ReactFlow wrapper
 │       │   └── modals/
-│       │       ├── PrefillModal.tsx           # Main prefill UI
-│       │       ├── DataMappingModal.tsx       # Data source selector
+│       │       ├── __tests__/
+│       │       │   ├── DataMappingModal.test.tsx
+│       │       │   ├── PrefillModal.test.tsx
+│       │       │   └── MappingItem.test.tsx
+│       │       ├── PrefillModal.tsx                # Main prefill UI
+│       │       ├── DataMappingModal.tsx            # Data source selector
 │       │       └── mappings/
 │       │           ├── AncestorNodesMapping.tsx     # Ancestor node properties
 │       │           ├── GlobalPropertiesMapping.tsx  # Global properties
 │       │           └── MappingItem.tsx              # Reusable mapping template
 │       ├── core/
-│       │   ├── types.ts           # TypeScript definitions
-│       │   └── traversal.ts       # DAG traversal logic
-│       └── utils/
-│           └── utils.ts           # Constants & mock data
-├── run.sh                         # Setup and run script
+│       │   ├── __tests__/
+│       │   │   └── traversal.test.ts   # Unit tests for graph traversal
+│       │   ├── types.ts                # TypeScript definitions
+│       │   └── traversal.ts            # DAG traversal logic
+│       ├── utils/
+│       │   └── utils.ts                # Constants & mock data
+│       └── test/
+│           └── setup.ts                # Test setup and configuration
+├── run.sh                              # Setup and run script
 └── README.md
 ```
 
@@ -254,15 +262,173 @@ All data structures defined in `types.ts` ensure compile-time safety
 - [ ] Drag-and-drop field mapping
 - [ ] Real-time preview of prefilled values
 
-## 🧪 Testing Strategy
+## 🧪 Testing
 
-The architecture supports easy testing:
-- **Unit Tests**: Pure functions in `traversal.ts`
-- **Component Tests**: Modal interactions, state updates
-- **Integration Tests**: Full user workflows
-- **E2E Tests**: Graph interaction → mapping → save flow
+### Testing Stack
+- **Vitest** - Fast unit test framework
+- **React Testing Library** - Component testing utilities
+- **@testing-library/jest-dom** - Custom DOM matchers
 
-*Testing implementation will be added in future iterations*
+### Running Tests
+
+```bash
+cd journey_builder
+npm install --legacy-peer-deps # Install dependencies (includes testing libraries)
+npm run test        # Run all tests
+npm run test:watch  # Run tests in watch mode
+npm run test:ui     # Open Vitest UI
+npm run coverage    # Generate coverage report
+```
+
+### Test Structure
+
+```
+journey_builder/src/
+├── components/
+│   └── modals/
+│       ├── __tests__/
+│       │   ├── DataMappingModal.test.tsx
+│       │   ├── PrefillModal.test.tsx
+│       │   └── mappings/
+│       │       └── MappingItem.test.tsx
+│       └── ...
+└── core/
+    └── __tests__/
+        └── traversal.test.ts
+```
+
+### Test Coverage
+
+#### 1. **Core Logic Tests** (`core/__tests__/traversal.test.ts`)
+
+**`getAncestorNodes()` Tests:**
+- ✅ Returns empty array for non-existent nodes
+- ✅ Returns empty array when node has no prerequisites
+- ✅ Returns direct ancestor nodes
+- ✅ Returns multiple ancestor nodes
+- ✅ Handles nested (transitive) prerequisites correctly
+- ✅ **Handles circular dependencies without infinite loop**
+- ✅ Prevents duplicate nodes in results
+
+**`getAncestorForms()` Tests:**
+- ✅ Returns empty array when no nodes provided
+- ✅ Returns empty array when no forms match
+- ✅ Returns matching forms for given nodes
+- ✅ Returns multiple forms for multiple nodes
+- ✅ Handles nodes with missing form references
+
+#### 2. **Component Tests**
+
+**MappingItem Component** (`components/modals/mappings/__tests__/MappingItem.test.tsx`)
+- ✅ Renders label correctly
+- ✅ Calls onToggle when label is clicked
+- ✅ Shows/hides fields based on expanded state
+- ✅ Calls onSelectField with correct field when clicked
+- ✅ Filters fields based on search term (case insensitive)
+- ✅ Shows all fields when search term is empty
+- ✅ Shows no fields when search term matches nothing
+- ✅ Filters fields with partial match
+- ✅ Applies correct hover styles
+- ✅ Handles empty fields array
+- ✅ Maintains proper indentation for fields
+- ✅ Uses cursor-pointer class for clickable elements
+
+**DataMappingModal Component** (`components/modals/__tests__/DataMappingModal.test.tsx`)
+- ✅ Renders modal with correct title
+- ✅ Renders available data section
+- ✅ Renders search input
+- ✅ Calls onClose when cancel button is clicked
+- ✅ Calls onClose when backdrop is clicked
+- ✅ Renders ancestor nodes
+- ✅ Expands form when clicked
+- ✅ Calls onSelect with correct parameters when field is selected
+- ✅ Filters fields based on search term
+- ✅ Toggles form expansion on multiple clicks
+- ✅ Handles nodes with no ancestors
+- ✅ Maintains search term state across form expansions
+- ✅ Has proper z-index layering
+
+**PrefillModal Component** (`components/modals/__tests__/PrefillModal.test.tsx`)
+- ✅ Renders modal with correct title and description
+- ✅ Renders all form fields
+- ✅ Calls onClose when cancel button is clicked
+- ✅ Calls onClose when close button (✕) is clicked
+- ✅ Calls onSave with prefilled fields and closes when save is clicked
+- ✅ Displays mapped field information when field is prefilled
+- ✅ Shows data mapping modal when unmapped field is clicked
+- ✅ Applies correct styling to prefilled fields
+- ✅ Does not open mapping modal when clicking on already mapped field
+- ✅ Handles empty form fields gracefully
+- ✅ Does not close modal when clicking inside modal content
+- ✅ Initializes with existing mappings from node data
+
+### Key Testing Patterns
+
+#### 1. **Circular Dependency Prevention**
+```typescript
+it('should handle circular dependencies without infinite loop', () => {
+  // node1 → node2 → node1 (circular)
+  const result = getAncestorNodes('node1', nodes);
+  expect(result).toHaveLength(1);
+  expect(result[0].id).toBe('node2');
+});
+```
+
+The algorithm uses a `visited` set to track processed nodes and prevent infinite recursion.
+
+#### 2. **Mock Functions**
+```typescript
+const mockOnSelect = vi.fn();
+const mockOnClose = vi.fn();
+
+fireEvent.click(cancelButton);
+expect(mockOnClose).toHaveBeenCalledTimes(1);
+```
+
+#### 3. **User Interaction Testing**
+```typescript
+// Expand form
+const formLabel = screen.getByText('Previous Node');
+fireEvent.click(formLabel);
+
+// Verify fields are visible
+expect(screen.getByText('name')).toBeInTheDocument();
+```
+
+#### 4. **Search Functionality**
+```typescript
+const searchInput = screen.getByPlaceholderText('Search');
+fireEvent.change(searchInput, { target: { value: 'name' } });
+
+expect(screen.getByText('name')).toBeInTheDocument();
+expect(screen.queryByText('age')).not.toBeInTheDocument();
+```
+
+### Test Best Practices
+
+✅ **Isolation**: Each test is independent with proper setup/cleanup
+✅ **Descriptive Names**: Test names clearly describe what is being tested
+✅ **Arrange-Act-Assert**: Clear test structure
+✅ **Mock External Dependencies**: API calls and callbacks are mocked
+✅ **User-Centric**: Tests focus on user interactions, not implementation details
+✅ **Edge Cases**: Empty states, missing data, circular dependencies
+
+### Coverage Goals
+
+Current test coverage focuses on:
+- **Core business logic**: 100% coverage of traversal algorithms
+- **User interactions**: All clickable elements and form interactions
+- **Edge cases**: Empty states, missing data, circular dependencies
+- **State management**: Mapping creation, updates, and deletions
+
+### Future Testing Enhancements
+
+- [ ] Integration tests for full user workflows
+- [ ] E2E tests using Playwright or Cypress
+- [ ] Visual regression testing
+- [ ] Performance testing for large graphs
+- [ ] Accessibility testing (ARIA attributes, keyboard navigation)
+- [ ] API mocking with MSW (Mock Service Worker)
 
 ## 📚 Code Quality
 

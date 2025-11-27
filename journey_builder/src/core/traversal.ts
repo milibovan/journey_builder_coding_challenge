@@ -20,6 +20,8 @@ export function getAncestorNodes(id: string, nodes: GraphNode[]): GraphNode[] {
         const prerequisites = node.data.prerequisites || [];
 
         prerequisites.forEach((prereqId) => {
+            if (visited.has(prereqId)) return;
+
             const prereqNode = nodes.find((n) => n.id === prereqId);
             if (prereqNode && !ancestors.find((a) => a.id === prereqNode.id)) {
                 ancestors.push(prereqNode);
