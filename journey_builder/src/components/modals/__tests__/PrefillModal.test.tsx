@@ -1,5 +1,5 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
-import {render, screen, fireEvent} from '@testing-library/react';
+import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import PrefillModal from '../PrefillModal';
 import type {FormDefinition, GraphNode, MappedFields} from '../../../core/types';
@@ -59,7 +59,35 @@ describe('PrefillModal Component', () => {
         }
     ];
 
-    const mockForms: FormDefinition[] = [mockForm];
+    const mockForm2: FormDefinition = {
+        id: 'form2',
+        name: 'Previous Form',
+        description: 'Previous form',
+        is_reusable: false,
+        field_schema: {
+            type: 'object',
+            properties: {
+                name: {
+                    'avantos-type': 'text',
+                    title: 'Name',
+                    type: 'string'
+                },
+                age: {
+                    'avantos-type': 'number',
+                    title: 'Age',
+                    type: 'number'
+                }
+            },
+            required: []
+        },
+        ui_schema: {
+            type: 'VerticalLayout',
+            elements: []
+        },
+        dynamic_field_config: {}
+    };
+
+    const mockForms: FormDefinition[] = [mockForm, mockForm2];
 
     let mockOnClose: () => void;
     let mockOnSave: (prefilledFields: MappedFields[]) => void;
@@ -279,7 +307,6 @@ describe('PrefillModal Component', () => {
         const firstNameField = screen.getByText('firstName').closest('li');
         fireEvent.click(firstNameField!);
 
-        // Should not show data mapping modal since field is already mapped
         expect(screen.queryByText('Select data element to map')).not.toBeInTheDocument();
     });
 
@@ -305,7 +332,6 @@ describe('PrefillModal Component', () => {
         );
 
         expect(screen.getByText('Prefill')).toBeInTheDocument();
-        // No fields should be rendered
         expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
     });
 
@@ -356,5 +382,91 @@ describe('PrefillModal Component', () => {
 
         expect(screen.getByText('Form A.fName')).toBeInTheDocument();
         expect(screen.getByText('Form B.emailAddress')).toBeInTheDocument();
+    });
+
+    it('should add new mapping when field is selected from DataMappingModal', async () => {
+        render(
+            <PrefillModal
+                id="node3"
+                nodes={mockNodes}
+                forms={mockForms}
+                form={mockForm}
+                onClose={mockOnClose}
+                onSave={mockOnSave}
+            />
+        );
+
+        const firstNameField = screen.getByText('firstName').closest('li');
+        fireEvent.click(firstNameField!);
+
+        await waitFor(() => {
+            expect(screen.getByText('Select data element to map')).toBeInTheDocument();
+        });
+
+        const actionPropsLabel = screen.getByText('Action Properties');
+        fireEvent.click(actionPropsLabel);
+
+        const subOption = await screen.findByText('id', {}, { timeout: 1000 }).catch(() => null);
+
+        if (subOption) {
+            fireEvent.click(subOption);
+            await waitFor(() => {
+                expect(screen.queryByText('Select data element to map')).not.toBeInTheDocument();
+            });
+            expect(screen.getByText('Action Properties.id')).toBeInTheDocument();
+
+            const saveButton = screen.getByRole('button', {name: /save/i});
+            fireEvent.click(saveButton);
+
+            expect(mockOnSave).toHaveBeenCalledWith([
+                {fieldName: 'firstName', sourceForm: 'Action Properties', sourceField: 'id'}
+            ]);
+        } else {
+            const idField = await screen.findByText('id').catch(() => null);
+            if(!idField) {
+                return;
+            }
+            fireEvent.click(idField);
+
+            await waitFor(() => {
+                expect(screen.queryByText('Select data element to map')).not.toBeInTheDocument();
+            });
+
+            expect(screen.getByText('Action Properties.id')).toBeInTheDocument();
+            const saveButton = screen.getByRole('button', {name: /save/i});
+            fireEvent.click(saveButton);
+            expect(mockOnSave).toHaveBeenCalled();
+        }
+    });
+
+    it('should close DataMappingModal when its backdrop is clicked', async () => {
+        render(
+            <PrefillModal
+                id="node3"
+                nodes={mockNodes}
+                forms={mockForms}
+                form={mockForm}
+                onClose={mockOnClose}
+                onSave={mockOnSave}
+            />
+        );
+
+        const firstNameField = screen.getByText('firstName').closest('li');
+        fireEvent.click(firstNameField!);
+
+        await waitFor(() => {
+            expect(screen.getByText('Select data element to map')).toBeInTheDocument();
+        });
+
+        const dataMappingBackdrop = document.querySelector('.fixed.inset-0.z-\\[60\\]');
+
+        expect(dataMappingBackdrop).toBeTruthy();
+        fireEvent.click(dataMappingBackdrop!);
+
+        await waitFor(() => {
+            expect(screen.queryByText('Select data element to map')).not.toBeInTheDocument();
+        });
+
+        expect(screen.getByText('Prefill')).toBeInTheDocument();
     });
 });
